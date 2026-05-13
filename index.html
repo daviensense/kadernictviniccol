@@ -783,6 +783,11 @@ display:flex; align-items:center; gap:10px; margin-bottom:32px; transition:color
 .lb-nav:hover { border-color: var(--pink); color: var(--cream); background: rgba(255,45,155,.1); }
 .lb-prev { left: 24px; }
 .lb-next { right: 24px; }
+
+/* Hide lightbox prev/next arrows on phones and touch devices */
+@media (max-width: 900px), (pointer: coarse) {
+  .lb-nav { display: none !important; }
+}
 .lb-counter {
   position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
   font-family: 'Inter', sans-serif; font-size: .55rem; letter-spacing: .25em;
