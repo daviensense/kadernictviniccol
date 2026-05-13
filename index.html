@@ -351,6 +351,11 @@ transition:transform .4s ease;
 .svc-name { font-size:1.4rem; font-weight:400; color:var(--cream); margin-bottom:10px; }
 .svc-desc { font-size:.95rem; font-weight:300; color:rgba(240,232,220,.4); line-height:1.8; }
 
+/* Touch fallback: emulate hover/hover-reveal on touch devices by toggling .hover-touch */
+.svc.hover-touch { background: rgba(255,45,155,.04); }
+.svc.hover-touch .svc-img { opacity: 1; }
+.svc.hover-touch::after { transform: scaleX(1); }
+
 /* HOURS */
 .hours { max-width:1240px; margin:0 auto; }
 .hours-grid { display:flex; flex-direction:column; gap:0; max-width:680px; }
@@ -1458,6 +1463,29 @@ function refreshCursorTargets(){
     el.addEventListener('mouseleave', cursorOut);
   });
 }
+
+// Touch: emulate hover on .svc elements so reveal + hover animations work on touch devices
+if (isTouch) {
+  // remove any existing hover-touch markers
+  document.querySelectorAll('.svc').forEach(s => s.classList.remove('hover-touch'));
+
+  // When a .svc is touched, show hover state; touching elsewhere clears it.
+  document.querySelectorAll('.svc').forEach(svc => {
+    svc.addEventListener('touchstart', function touchSvc(e){
+      // If already active, allow normal interaction (e.g. link or button)
+      if (this.classList.contains('hover-touch')) return;
+      // Clear others and set this one
+      document.querySelectorAll('.svc.hover-touch').forEach(x=>x.classList.remove('hover-touch'));
+      this.classList.add('hover-touch');
+      e.stopPropagation();
+    }, {passive:true});
+  });
+
+  // Clear hover-touch when user touches outside
+  document.addEventListener('touchstart', function(){
+    document.querySelectorAll('.svc.hover-touch').forEach(x=>x.classList.remove('hover-touch'));
+  }, {passive:true});
+}
 function cursorIn(){ c.style.transform='translate(-50%,-50%) scale(2.2)'; cr.style.transform='translate(-50%,-50%) scale(1.7)'; cr.style.opacity='1'; }
 function cursorOut(){ c.style.transform='translate(-50%,-50%) scale(1)'; cr.style.transform='translate(-50%,-50%) scale(1)'; cr.style.opacity='.5'; }
 refreshCursorTargets();
@@ -1817,6 +1845,32 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'ArrowLeft') lbNav(-1);
   else if (e.key === 'Escape') { overlay.classList.remove('open'); document.body.style.overflow = ''; }
 });
+
+/* Touch: swipe left/right on lightbox to navigate */
+(function(){
+  const overlay = document.getElementById('lbOverlay');
+  let startX = 0, startY = 0, moved = false;
+  const THRESHOLD = 50; // px
+
+  overlay.addEventListener('touchstart', e => {
+    if (!overlay.classList.contains('open')) return;
+    const t = e.touches[0]; startX = t.clientX; startY = t.clientY; moved = false;
+  }, {passive: true});
+
+  overlay.addEventListener('touchmove', e => {
+    if (!overlay.classList.contains('open')) return;
+    const t = e.touches[0]; const dx = t.clientX - startX; const dy = t.clientY - startY;
+    if (Math.abs(dx) > 10 && Math.abs(dy) < 75) moved = true;
+  }, {passive: true});
+
+  overlay.addEventListener('touchend', e => {
+    if (!overlay.classList.contains('open') || !moved) return;
+    const t = e.changedTouches[0]; const dx = t.clientX - startX; const dy = t.clientY - startY;
+    if (Math.abs(dx) > THRESHOLD && Math.abs(dy) < 100) {
+      if (dx < 0) lbNav(1); else lbNav(-1);
+    }
+  });
+})();
 </script>
 
 </body>
