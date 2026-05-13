@@ -6,6 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kadeřnictví NICCOL — Kozojedy, Kralovice</title>
 <meta name="description" content="Kadeřnictví NICCOL nabízí dámské, pánské, dětské střihy, společenské účesy a mnoho dalšího. Kozojedy 141, Kralovice.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://images.unsplash.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -29,6 +32,12 @@
   --muted: #7A6070;
   --border:rgba(255,45,155,0.18);
   --border2:rgba(255,122,45,0.15);
+}
+
+/* Performance: hide custom cursor on touch devices */
+@media (pointer: coarse), (hover: none) {
+  .c, .cr { display: none !important; }
+  body { cursor: default; }
 }
 
 html { scroll-behavior: smooth; }
@@ -1429,12 +1438,19 @@ section { padding:64px 20px; }
 
 <script>
 /* ── CURSOR ── */
+const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 const c = document.getElementById('c'), cr = document.getElementById('cr');
-document.addEventListener('mousemove', e => {
-  c.style.left = e.clientX+'px'; c.style.top = e.clientY+'px';
-  setTimeout(()=>{ cr.style.left=e.clientX+'px'; cr.style.top=e.clientY+'px'; }, 70);
-});
+if (isTouch) {
+  c.style.display = 'none';
+  cr.style.display = 'none';
+} else {
+  document.addEventListener('mousemove', e => {
+    c.style.left = e.clientX+'px'; c.style.top = e.clientY+'px';
+    setTimeout(()=>{ cr.style.left=e.clientX+'px'; cr.style.top=e.clientY+'px'; }, 70);
+  });
+}
 function refreshCursorTargets(){
+  if (isTouch) return;
   document.querySelectorAll('a,button,.svc,.cal-day,.slot').forEach(el=>{
     el.removeEventListener('mouseenter', cursorIn);
     el.removeEventListener('mouseleave', cursorOut);
